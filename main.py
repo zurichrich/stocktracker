@@ -33,21 +33,26 @@ try:
     # Get stock data
     df = get_stock_data(symbol, period)
     info = get_company_info(symbol)
-    
+
     if df is not None and not df.empty:
         # Company information section
-        st.header(f"{info['longName']} ({symbol})")
+        st.header(f"{info.get('longName', symbol)} ({symbol})")
         col1, col2, col3, col4 = st.columns(4)
-        
+
         with col1:
-            st.metric("Current Price", f"${info['currentPrice']:.2f}", 
-                     f"{info['dayChange']:.2f}%")
+            st.metric("Current Price", f"${info.get('currentPrice', 0):.2f}", 
+                     f"{info.get('dayChange', 0):.2f}%")
         with col2:
-            st.metric("Market Cap", f"${info['marketCap'] / 1e9:.2f}B")
+            market_cap = info.get('marketCap', 0) / 1e9
+            st.metric("Market Cap", f"${market_cap:.2f}B")
         with col3:
-            st.metric("P/E Ratio", f"{info['peRatio']:.2f}")
+            pe_ratio = info.get('peRatio', 'N/A')
+            pe_display = f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A"
+            st.metric("P/E Ratio", pe_display)
         with col4:
-            st.metric("52W Range", f"${info['fiftyTwoWeekLow']:.2f} - ${info['fiftyTwoWeekHigh']:.2f}")
+            low_52w = info.get('fiftyTwoWeekLow', 0)
+            high_52w = info.get('fiftyTwoWeekHigh', 0)
+            st.metric("52W Range", f"${low_52w:.2f} - ${high_52w:.2f}")
 
         # Charts
         st.subheader("Price Chart")
@@ -62,16 +67,16 @@ try:
         # Key Statistics
         st.header("Key Statistics")
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.markdown("### Trading Information")
             stats_df = pd.DataFrame({
                 'Metric': ['Volume', 'Avg Volume (10d)', 'Beta', 'Days Range'],
                 'Value': [
-                    f"{info['volume']:,}",
-                    f"{info['averageVolume10days']:,}",
-                    f"{info['beta']:.2f}",
-                    f"${info['dayLow']:.2f} - ${info['dayHigh']:.2f}"
+                    f"{info.get('volume', 0):,}",
+                    f"{info.get('averageVolume10days', 0):,}",
+                    f"{info.get('beta', 'N/A')}",
+                    f"${info.get('dayLow', 0):.2f} - ${info.get('dayHigh', 0):.2f}"
                 ]
             })
             st.table(stats_df)
@@ -81,10 +86,10 @@ try:
             metrics_df = pd.DataFrame({
                 'Metric': ['Revenue (TTM)', 'Profit Margin', 'Operating Margin', 'ROE'],
                 'Value': [
-                    f"${info['totalRevenue'] / 1e9:.2f}B",
-                    f"{info['profitMargins']:.2%}",
-                    f"{info['operatingMargins']:.2%}",
-                    f"{info['returnOnEquity']:.2%}"
+                    f"${info.get('totalRevenue', 0) / 1e9:.2f}B",
+                    f"{info.get('profitMargins', 0):.2%}",
+                    f"{info.get('operatingMargins', 0):.2%}",
+                    f"{info.get('returnOnEquity', 0):.2%}"
                 ]
             })
             st.table(metrics_df)
