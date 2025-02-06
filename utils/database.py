@@ -8,22 +8,14 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Get database URL from environment
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Use SQLite for local development
+DATABASE_URL = 'sqlite:///./stockdata.db'
 
-# Ensure proper PostgreSQL URL format
-if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-
-# Create engine with proper connection pooling and timeout settings
+# Create engine with SQLite
 engine = create_engine(
     DATABASE_URL,
     echo=True,
-    poolclass=QueuePool,
-    pool_size=5,
-    max_overflow=10,
-    pool_timeout=30,
-    pool_pre_ping=True
+    connect_args={'check_same_thread': False}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
