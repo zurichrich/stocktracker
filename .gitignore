@@ -43,3 +43,4 @@ ENV/
 # Misc
 .DS_Store
 *.log
+stockdata.db
